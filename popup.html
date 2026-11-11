@@ -771,6 +771,7 @@
     <button data-page="summarize">✨ Summarize</button>
     <button data-page="pip">🖼 PiP</button>
     <button data-page="jsonformat">{} JSON</button>
+    <button data-page="tabz">🗂 tAbZ</button>
   </div>
 
   <!-- ═══ Tab Cleaner Page ═══ -->
@@ -1242,6 +1243,41 @@
     </div>
   </div>
 
+  <!-- ═══ tAbZ Page ═══ -->
+  <div class="page" id="page-tabz">
+    <div class="page-body">
+      <div class="tabz-count">
+        <b>Open tabs</b>
+        <span class="num" id="tabzCount">0</span>
+      </div>
+      <div class="tabz-actions">
+        <button class="tabz-action" data-op="removeDuplicates">
+          <span class="ico">🧹</span> Remove duplicate tabs
+        </button>
+        <button class="tabz-action" data-op="moveUngrouped">
+          <span class="ico">🪟</span> Move ungrouped tabs to new window
+        </button>
+        <button class="tabz-action" data-op="sortTabs">
+          <span class="ico">🔤</span> Sort ungrouped tabs by domain
+        </button>
+      </div>
+      <div class="tabz-status" id="tabzStatus"></div>
+
+      <h2>Whitelisted Domains</h2>
+      <div class="tabz-add">
+        <input type="text" id="tabzInput" placeholder="e.g. youtube.com">
+        <button id="tabzAddBtn">Add</button>
+      </div>
+      <div id="tabzList"></div>
+      <div class="tabz-note">
+        On whitelisted domains, tabs count as duplicates only when the full
+        URL matches — so multiple searches or videos stay open. Elsewhere,
+        same page path = duplicate. Duplicate removal keeps pinned &gt; grouped
+        &gt; oldest. Moving and sorting ignore pinned and grouped tabs.
+      </div>
+    </div>
+  </div>
+
   <!-- Add Cookie Modal -->
   <div class="modal-overlay" id="addModal">
     <div class="modal">
@@ -1270,5 +1306,6 @@
   </div>
 
   <script src="popup.js"></script>
+  <script src="tabz.js"></script>
 </body>
 </html>

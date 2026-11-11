@@ -18,12 +18,12 @@
     .ot-sdk-row, #ot-sdk-btn-floating,
     .cky-consent-container, #cky-consent,
     .didomi-popup, #didomi-host, #didomi-notice,
-    .sp-message-open, #sp_message_container_0,
+    [id^="sp_message_container_"],
     [class*="cookie-banner"], [class*="cookie-consent"],
     [id*="cookie-banner"], [id*="cookie-consent"],
     [class*="CookieBanner"], [class*="CookieConsent"],
     .fc-consent-root, .fc-dialog-overlay, .fc-dialog,
-    .qc-cmp-showing, #qcCmpUi, .qc-cmp2-container,
+    #qcCmpUi, .qc-cmp2-container,
     .truste_box_overlay, #truste-consent-track,
     .osano-cm-dialog, .osano-cm-window,
     [aria-label="Cookie banner"], [aria-label="cookie consent"],
@@ -64,9 +64,19 @@
     html.sp-message-open,
     html.cookie-consent-open,
     body.ot-overflow-hidden,
-    html.ot-overflow-hidden {
+    html.ot-overflow-hidden,
+    body.qc-cmp-showing,
+    html.qc-cmp-showing {
       overflow: auto !important;
       position: static !important;
+    }
+    /* Some CMPs (e.g. Sourcepoint) lock scroll on <body> via a
+       descendant rule while the state class sits on <html>. */
+    html.sp-message-open body,
+    html.qc-cmp-showing body {
+      position: static !important;
+      overflow: visible !important;
+      height: auto !important;
     }
     .cc-grower { max-height: 0 !important; }
   `;
