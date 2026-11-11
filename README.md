@@ -10,6 +10,35 @@ A super Chrome extension that replaces 12+ separate extensions with one open-sou
 
 Most Chrome extensions are closed-source malware/spyware-filled garbage that form a massive security risk. This one is open source and you can read and check the source code (with AI) before you install it, and customize it to your liking!
 
+## 🍴 About this fork
+
+This is [azmau/superlevels](https://github.com/azmau/superlevels), a personal fork of [levelsio/superlevels](https://github.com/levelsio/superlevels). It tracks upstream and adds a few changes on top. Everything else in this README describes the upstream extension. Install it the same way (see [Install](#install)), just from this repo.
+
+### Added in this fork
+
+#### 🗂 tAbZ
+A tab manager page in the popup, ported from my own tAbZ extension:
+- **Remove duplicate tabs**: keeps the best copy (pinned > grouped > oldest). A tab counts as a duplicate if it has the same page path, ignoring the query string.
+- **Move ungrouped tabs to a new window**: collects every tab that isn't pinned or in a tab group.
+- **Sort ungrouped tabs by domain**: sorts in the last-focused window and leaves pinned and grouped tabs where they are.
+- **Whitelisted domains**: on these domains, tabs count as duplicates only when the full URL matches, so multiple searches or videos stay open. Defaults: `youtube.com`, `filelist.io`. The list is stored in `chrome.storage.sync`.
+
+This needs the extra `tabGroups` permission.
+
+#### 🚫 Better cookie banner handling
+The cookie consent dismisser catches all Sourcepoint containers (`sp_message_container_*`, not just the first one). It also unlocks page scrolling that Sourcepoint and Quantcast leave locked on `<body>` after hiding the banner.
+
+### Staying in sync with upstream
+
+```
+git remote add upstream https://github.com/levelsio/superlevels.git   # once
+git fetch upstream
+git merge upstream/main
+git push
+```
+
+To keep merges painless, fork-only features live in their own files (e.g. `tabz.js`). Edits to upstream files are kept small. When `manifest.json` conflicts, take upstream's version and re-add `tabGroups` to `permissions`.
+
 ## Demo
 
 ![SuperLevels Demo](demo.gif)
