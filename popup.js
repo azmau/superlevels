@@ -20,6 +20,7 @@ function switchToPage(page) {
     else if (page === "unhook") loadUnhook();
     else if (page === "xunhook") loadXUnhook();
     else if (page === "xreply") loadXReply();
+    else if (page === "xselect") loadXSelect();
     else if (page === "photopea") loadPhotopea();
     else if (page === "tiktok") loadTikTok();
     else if (page === "archive") loadArchive();
@@ -969,6 +970,35 @@ xreplyToggle.addEventListener("change", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab) {
     chrome.tabs.sendMessage(tab.id, { type: "xreply_toggle", enabled }).catch(() => {});
+  }
+});
+
+// ═══════════════════════════════════
+//  X Multi-Select Replies
+// ═══════════════════════════════════
+const xselectToggle = document.getElementById("xselectToggle");
+const xselectStatus = document.getElementById("xselectStatus");
+
+async function loadXSelect() {
+  const data = await chrome.storage.local.get(["xselect_enabled"]);
+  const enabled = data.xselect_enabled !== false;
+  xselectToggle.checked = enabled;
+  updateXSelectUI(enabled);
+}
+
+function updateXSelectUI(on) {
+  xselectStatus.textContent = on ? "ON" : "OFF";
+  xselectStatus.className = "status " + (on ? "on" : "off");
+}
+
+xselectToggle.addEventListener("change", async () => {
+  const enabled = xselectToggle.checked;
+  updateXSelectUI(enabled);
+  await chrome.storage.local.set({ xselect_enabled: enabled });
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab) {
+    chrome.tabs.sendMessage(tab.id, { type: "xselect_toggle", enabled }).catch(() => {});
   }
 });
 

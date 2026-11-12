@@ -103,7 +103,7 @@ function buildThemeCSS() {
   }`;
 }
 
-// Chat (xchatEmbedRoute) renders inside a shadow root, which page CSS can't reach.
+// Chat renders inside a shadow root, which page CSS can't reach.
 // :host prefix out-specifies the shadow's own adopted [data-theme=dark] sheet.
 function buildShadowCSS() {
   return `
@@ -118,7 +118,8 @@ const STATIC_CSS = `
     background-color: var(--xdm-bg) !important;
   }
   html.${DIM_CLASS} [style*="background-color: rgb(0, 0, 0)"],
-  html.${DIM_CLASS} [style*="background-color: rgba(0, 0, 0, 1)"] {
+  html.${DIM_CLASS} [style*="background-color: rgba(0, 0, 0, 1)"],
+  html.${DIM_CLASS} [style*="background-color: rgb(20, 20, 20)"] {
     background-color: var(--xdm-bg) !important;
   }
   html.${DIM_CLASS} [style*="background-color: rgb(24, 24, 27)"],
@@ -130,10 +131,11 @@ const STATIC_CSS = `
   html.${DIM_CLASS} [role="dialog"][aria-modal="true"] {
     background-color: var(--xdm-bg) !important;
   }
-  html.${DIM_CLASS} [role="link"] > div > div:first-child div:has(> svg:only-child) {
+  html.${DIM_CLASS} [role="link"] > div > div:first-child div:has(> svg:only-child):not(:has(> svg[data-icon])) {
     background-color: var(--xdm-bg-elevated) !important;
   }
   html.${DIM_CLASS} .r-kemksi,
+  html.${DIM_CLASS} .r-cl2sl0,
   html.${DIM_CLASS} .r-1niwhzg,
   html.${DIM_CLASS} .r-yfoy6g,
   html.${DIM_CLASS} .r-14lw9ot {
@@ -246,24 +248,37 @@ function injectShadowCSS(root) {
   if (style.textContent !== css) style.textContent = css;
 }
 
-let _shadowRetryFrame = 0;
-let _shadowRetryUntil = 0;
+// Chat's shadow hosts are plain divs with no stable marker (X dropped the
+// xchatEmbedRoute testid), so treat any shadow root as a candidate — the CSS
+// only matches [data-theme="dark"] inside it
+function scanShadowHosts(root) {
+  if (root.shadowRoot) injectShadowCSS(root.shadowRoot);
+  for (const el of root.querySelectorAll("div")) {
+    if (el.shadowRoot) injectShadowCSS(el.shadowRoot);
+  }
+}
 
 function scanShadowRoots() {
-  let waiting = false;
-  for (const host of document.querySelectorAll('[data-testid="xchatEmbedRoute"]')) {
-    if (host.shadowRoot) injectShadowCSS(host.shadowRoot);
-    else waiting = true;
+  scanShadowHosts(document);
+}
+
+let _shadowRetryFrame = 0;
+const _shadowRetryNodes = new Set();
+
+// Check freshly added nodes right away, then again next frame in case
+// attachShadow ran after insertion, so Chat never paints black
+function scanAddedForShadow(nodes) {
+  for (const n of nodes) {
+    if (n.nodeType !== 1) continue;
+    scanShadowHosts(n);
+    _shadowRetryNodes.add(n);
   }
-  // Host is in the DOM but its shadow root isn't attached yet: retry every frame
-  // (up to 3s) so Chat never paints black before we get in
-  if (waiting) {
-    if (!_shadowRetryUntil) _shadowRetryUntil = performance.now() + 3000;
-    if (performance.now() < _shadowRetryUntil && !_shadowRetryFrame) {
-      _shadowRetryFrame = requestAnimationFrame(() => { _shadowRetryFrame = 0; scanShadowRoots(); });
-    }
-  } else {
-    _shadowRetryUntil = 0;
+  if (_shadowRetryNodes.size && !_shadowRetryFrame) {
+    _shadowRetryFrame = requestAnimationFrame(() => {
+      _shadowRetryFrame = 0;
+      for (const n of _shadowRetryNodes) if (n.isConnected) scanShadowHosts(n);
+      _shadowRetryNodes.clear();
+    });
   }
 }
 
@@ -436,7 +451,7 @@ function dimElement(el) {
   const bg = shouldUseComputedBg(el)
     ? (() => { try { return getComputedStyle(el).backgroundColor; } catch { return ""; } })()
     : el.style.backgroundColor;
-  if (bg === "rgb(0, 0, 0)" || bg === "rgba(0, 0, 0, 1)") {
+  if (bg === "rgb(0, 0, 0)" || bg === "rgba(0, 0, 0, 1)" || bg === "rgb(20, 20, 20)") {
     el.classList.add("xdm-dimmed");
   } else if (bg === "rgb(24, 24, 27)") {
     el.classList.add("xdm-dimmed-elevated");
@@ -456,10 +471,12 @@ function startObserver() {
         applyDim();
       }
       if (_enabled && document.documentElement.classList.contains(DIM_CLASS)) {
-        let added = false;
-        for (const m of mutations) { if (m.addedNodes.length) { added = true; queueScan(m.addedNodes); } }
-        // Catch Chat's shadow host the moment it mounts instead of waiting for the poll
-        if (added) scanShadowRoots();
+        for (const m of mutations) {
+          if (!m.addedNodes.length) continue;
+          queueScan(m.addedNodes);
+          // Catch Chat's shadow host the moment it mounts instead of waiting for the poll
+          scanAddedForShadow(m.addedNodes);
+        }
       }
       if (_enabled && document.body && !_bodyObserver) startBodyObserver();
     } catch {
