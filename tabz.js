@@ -11,6 +11,7 @@
 //   - removeDuplicates : close duplicate tabs across all windows
 //   - moveUngrouped    : move ungrouped, non-pinned tabs to a new window
 //   - sortTabs         : sort ungrouped, non-pinned tabs in the current window
+//   - exportUrls       : copy every open tab's URL to the clipboard
 //   - whitelist        : domains where only an exact URL counts as a duplicate
 
 (function () {
@@ -135,6 +136,18 @@
     return `Sorted ${ungrouped.length} tab${plural(ungrouped.length)} by domain`;
   }
 
+  async function exportTabUrls() {
+    // All windows, in window/tab order: title line, then URL line, per tab
+    const tabs = await chrome.tabs.query({});
+    const entries = tabs
+      .map((t) => ({ url: t.url || t.pendingUrl, title: t.title }))
+      .filter((e) => e.url)
+      .map((e) => `${(e.title || e.url).replace(/\s+/g, " ").trim()}\n${e.url}`);
+    if (!entries.length) return "No tab URLs to export";
+    await navigator.clipboard.writeText(entries.join("\n"));
+    return `Copied ${entries.length} tab${plural(entries.length)} to clipboard`;
+  }
+
   function plural(n) {
     return n === 1 ? "" : "s";
   }
@@ -205,6 +218,7 @@
       removeDuplicates: { fn: removeDuplicateTabs, busy: "Removing duplicates…" },
       moveUngrouped: { fn: moveUngroupedTabs, busy: "Moving tabs…" },
       sortTabs: { fn: sortTabsByDomain, busy: "Sorting tabs…" },
+      exportUrls: { fn: exportTabUrls, busy: "Copying URLs…" },
     };
 
     async function runOp(name) {
