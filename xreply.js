@@ -62,14 +62,19 @@
   }
 
   function findAudienceButton(root) {
-    const candidates = root.querySelectorAll('button, [role="button"]');
+    // Skip the top "Everyone" audience menu (who sees the post); we only want
+    // the bottom "Everyone can reply" pill. Prefer a "can reply" match first.
+    const candidates = [...root.querySelectorAll('button, [role="button"]')].filter(btn =>
+      btn.getAttribute("aria-label") !== "Choose audience" &&
+      btn.getAttribute("aria-haspopup") !== "menu");
+    let fallback = null;
     for (const btn of candidates) {
       const text = btn.textContent?.trim();
       if (!text) continue;
-      if (AUDIENCE_PILL_LABELS.has(text)) return btn;
       if (/\bcan reply\b/i.test(text) && text.length < 80) return btn;
+      if (!fallback && AUDIENCE_PILL_LABELS.has(text)) fallback = btn;
     }
-    return null;
+    return fallback;
   }
 
   function tryOpenComposerPicker() {

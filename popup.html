@@ -761,6 +761,7 @@
     <button data-page="xdim">𝕏 Dim</button>
     <button data-page="xunhook">𝕏 Unhook</button>
     <button data-page="xreply">𝕏 Reply</button>
+    <button data-page="xselect">𝕏 Select</button>
     <button data-page="photopea">🫛 Photopea</button>
     <button data-page="tiktok">🎶 TikTok</button>
     <button data-page="archive">🗄 No paywall</button>
@@ -1020,6 +1021,32 @@
 
       <div class="xdim-note" style="margin-top:10px">
         Clicking TikTok's own Log in button still opens the login popup.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ X Select Page ═══ -->
+  <div class="page" id="page-xselect">
+    <div class="page-body">
+      <div class="unhook-big-toggle">
+        <div class="yticon" style="font-weight:800;font-family:-apple-system,sans-serif;">𝕏</div>
+        <label class="big-switch">
+          <input type="checkbox" id="xselectToggle" checked>
+          <span class="big-slider"></span>
+        </label>
+        <div class="status on" id="xselectStatus">ON</div>
+      </div>
+
+      <div class="unhook-features">
+        <div class="unhook-feature"><span class="check">✓</span> Adds a checkbox to every reply on a post page</div>
+        <div class="unhook-feature"><span class="check">✓</span> Shift-click to select a whole range</div>
+        <div class="unhook-feature"><span class="check">✓</span> Hide, Block, or Hide + Block all selected at once</div>
+        <div class="unhook-feature"><span class="check">✓</span> Skips the post itself and your own replies</div>
+      </div>
+
+      <div class="xdim-note" style="margin-top:10px">
+        Batch-clean spam replies under your posts.<br>
+        Hide only works on replies to your own posts.
       </div>
     </div>
   </div>
